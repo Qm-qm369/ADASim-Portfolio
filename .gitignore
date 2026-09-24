@@ -56,3 +56,8 @@ Thumbs.db
 
 # 运行时产出
 record/
+test_result/
+
+#python缓存
+__pycache__/
+*.pyc
