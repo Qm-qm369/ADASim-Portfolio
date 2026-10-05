@@ -1,0 +1,8 @@
+{
+    "name": "invalid_expectation",
+    "obstacles": [],
+    "test": {
+        "max_frames": 200,
+        "aeb_expectation": "Unknown"
+    }
+}

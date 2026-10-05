@@ -1,0 +1,6 @@
+#ifndef ADASIM_VERSION_H
+#define ADASIM_VERSION_H
+
+#define ADASIM_VERSION "@PROJECT_VERSION@"
+
+#endif

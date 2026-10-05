@@ -1,0 +1,17 @@
+{
+    "name": "multi_obstacle",
+    "obstacles": [
+        {
+            "x": 20.0,
+            "y": 0.0
+        },
+        {
+            "x": 35.0,
+            "y": 1.75
+        }
+    ],
+    "test": {
+        "max_frames": 300,
+        "aeb_expectation": "Required"
+    }
+}

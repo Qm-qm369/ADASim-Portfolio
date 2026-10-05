@@ -1,0 +1,13 @@
+{
+    "name": "straight_obstacle",
+    "obstacles": [
+        {
+            "x": 20.0,
+            "y": 0.0
+        }
+    ],
+    "test": {
+        "max_frames": 200,
+        "aeb_expectation": "Required"
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "name": "invalid_max_frames",
+    "obstacles": [],
+    "test": {
+        "max_frames": -1,
+        "aeb_expectation": "Any"
+    }
+}

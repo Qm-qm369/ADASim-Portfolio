@@ -1,0 +1,17 @@
+{
+    "name": "ADASim regression",
+    "cases": [
+        {
+            "name": "empty",
+            "scenario": "../scenarios/empty.json"
+        },
+        {
+            "name": "straight_obstacle",
+            "scenario": "../scenarios/straight_obstacle.json"
+        },
+        {
+            "name": "multi_obstacle",
+            "scenario": "../scenarios/multi_obstacle.json"
+        }
+    ]
+}

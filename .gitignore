@@ -1,0 +1,65 @@
+# =========================
+# CMake build directories
+# =========================
+/build/
+/build-*/
+/package-rk3568/
+/record/
+/test_result/
+*.log
+
+# =========================
+# CMake generated files
+# =========================
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+CMakeUserPresets.json
+CMakeLists.txt.user*
+compile_commands.json
+
+# =========================
+# Qt / IDE
+# =========================
+.qtcreator/
+*.autosave
+*.moc
+
+# =========================
+# C/C++ build products
+# =========================
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.a
+*.lib
+
+# =========================
+# Runtime temporary files
+# =========================
+*.log
+*.tmp
+
+# =========================
+# OS generated files
+# =========================
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.user
+*.user.*
+
+# 运行时产出
+record/
+test_result/
+
+#python缓存
+__pycache__/
+*.pyc

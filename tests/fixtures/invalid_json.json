@@ -1,0 +1,7 @@
+{
+    "name": "broken",
+    "obstacles": [
+        {
+            "x": 1.0,
+            "y": 2.0
+        }

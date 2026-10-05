@@ -1,0 +1,40 @@
+name: Build and Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            build-essential \
+            cmake \
+            qtbase5-dev \
+            qtbase5-dev-tools
+
+      - name: Configure
+        run: |
+          cmake -S . \
+            -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTING=ON
+
+      - name: Build
+        run: |
+          cmake --build build \
+            --parallel
+
+      - name: Test
+        run: |
+          ctest \
+            --test-dir build \
+            --output-on-failure
