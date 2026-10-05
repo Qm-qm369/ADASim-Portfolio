@@ -67,6 +67,8 @@ set(PROJECT_SOURCES
 
     src/communication/Socket.cpp
     src/communication/PlannerLink.cpp
+    src/communication/SerialPort.cpp
+    src/communication/SerialProtocol.cpp
 
     src/system/LinuxLogger.cpp
     src/system/LinuxSignalHandler.cpp
@@ -103,6 +105,33 @@ endif()
 add_executable(${PROJECT_NAME}
     ${PROJECT_SOURCES}
 )
+
+# 交叉编译时，代码生成工具必须在宿主机运行
+if(CMAKE_CROSSCOMPILING)
+    set(RK_HOST_QT_BIN "/usr/lib/qt5/bin"
+        CACHE PATH "Host Qt 5 tools directory"
+    )
+
+    if(NOT QT_VERSION_MAJOR EQUAL 5)
+        message(FATAL_ERROR
+            "This cross-build setup requires Qt 5"
+        )
+    endif()
+
+    foreach(tool moc uic rcc)
+        if(NOT EXISTS "${RK_HOST_QT_BIN}/${tool}")
+            message(FATAL_ERROR
+                "Host Qt tool not found: ${RK_HOST_QT_BIN}/${tool}"
+            )
+        endif()
+    endforeach()
+
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        AUTOMOC_EXECUTABLE "${RK_HOST_QT_BIN}/moc"
+        AUTOUIC_EXECUTABLE "${RK_HOST_QT_BIN}/uic"
+        AUTORCC_EXECUTABLE "${RK_HOST_QT_BIN}/rcc"
+    )
+endif()
 
 include(CTest)
 

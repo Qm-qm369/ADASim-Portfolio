@@ -240,7 +240,7 @@ int main(
         &mainWindow,
         &MainWindow::onTerminationRequested);
 
-    mainWindow.show();
+    mainWindow.showFullScreen();
 
     return app->exec();
 }

@@ -7,7 +7,10 @@
 #include <QDir>
 #include <QTimer>
 #include <QSaveFile>
+#include <QSettings>
 
+#include "communication/SerialPort.h"
+#include "communication/SerialProtocol.h"
 #include "backend/DataLoader.h"
 #include "backend/DataManager.h"
 #include "communication/Socket.h"
@@ -111,6 +114,11 @@ bool HeadlessRunner::initialize()
 
     LinuxLogger::info(
         "ADASim headless initialized");
+
+    if (!setupSerial())
+    {
+        return false;
+    }
 
     initialized_ = true;
 
@@ -424,6 +432,10 @@ void HeadlessRunner::onSimulationFrameUpdated(
     int currentIndex,
     bool targetSettled)
 {
+    latestSpeedMps_ = frame.speedKmH / 3.6;
+    latestAeb_ = frame.emergencyBrake;
+    haveSerialState_ = true;
+
     Q_UNUSED(currentIndex);
 
     ++frameCounter_;
@@ -533,6 +545,11 @@ void HeadlessRunner::shutdown()
         return;
 
     shutdownStarted_ = true;
+
+    if (serialPort_)
+    {
+        serialPort_->closeDevice();
+    }
 
     if (dataLoader_)
         dataLoader_->stop();
@@ -679,4 +696,114 @@ static QString aebExpectationToString(
     }
 
     return "Unknown";
+}
+
+// 读取串口配置，创建串口对象，连接收到数据后的处理函数，最后打开串口。
+bool HeadlessRunner::setupSerial()
+{
+    QSettings settings(configPath_, QSettings::IniFormat);
+
+    const bool enabled =
+        settings.value("serial/enabled", false).toBool();
+
+    if (!enabled)
+    {
+        return true;
+    }
+
+    const QString device =
+        settings.value("serial/device").toString().trimmed();
+
+    if (device.isEmpty())
+    {
+        qCritical() << "[SERIAL] Device path is empty";
+        return false;
+    }
+
+    serialTargetSpeedMps_ = appConfig_.targetSpeed;
+    serialPort_ = new SerialPort(this);
+
+    connect(serialPort_, &SerialPort::lineReceived,
+            this, &HeadlessRunner::handleSerialLine);
+
+    connect(serialPort_, &SerialPort::lineRejected,
+            this, [this](const QString &reason)
+            { serialPort_->sendLine(
+                  QByteArray("ERR ") + reason.toUtf8()); });
+
+    connect(serialPort_, &SerialPort::portError,
+            this, [](const QString &message)
+            { qWarning().noquote()
+                  << "[SERIAL] Closed:" << message; });
+
+    QString error;
+
+    if (!serialPort_->openDevice(device, error))
+    {
+        qCritical().noquote()
+            << "[SERIAL] Cannot open" << device << error;
+        return false;
+    }
+
+    qInfo().noquote()
+        << "[SERIAL] Opened:" << device;
+
+    return true;
+}
+
+// 收到一条完整串口命令后，判断要做什么，执行操作，再给对端回复。
+void HeadlessRunner::handleSerialLine(
+    const QByteArray &line)
+{
+    if (shutdownStarted_)
+    {
+        return;
+    }
+
+    const SerialCommand command =
+        parseSerialCommand(line.toStdString());
+
+    switch (command.type)
+    {
+    case CommandType::Ping:
+        serialPort_->sendLine("PONG");
+        break;
+
+    case CommandType::SetSpeed:
+        serialTargetSpeedMps_ = command.speedMps;
+
+        simulationEngine_->setTargetVehicleSpeed(
+            command.speedMps);
+
+        serialPort_->sendLine(
+            QByteArray("OK SET_SPEED ") +
+            QByteArray::number(command.speedMps, 'f', 3));
+
+        qInfo() << "[SERIAL] Target speed:"
+                << command.speedMps << "m/s";
+        break;
+
+    case CommandType::GetState:
+        if (!haveSerialState_)
+        {
+            serialPort_->sendLine("ERR state-not-ready");
+            break;
+        }
+
+        serialPort_->sendLine(
+            QByteArray("STATE target_speed_mps=") +
+            QByteArray::number(
+                serialTargetSpeedMps_, 'f', 3) +
+            " speed_mps=" +
+            QByteArray::number(latestSpeedMps_, 'f', 3) +
+            " aeb=" +
+            (latestAeb_ ? "1" : "0"));
+        break;
+
+    case CommandType::Invalid:
+        serialPort_->sendLine(
+            QByteArray("ERR ") +
+            QByteArray::fromStdString(command.error));
+        break;
+    }
 }

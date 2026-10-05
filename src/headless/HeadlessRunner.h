@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QByteArray>
 
 #include "config/ConfigManager.h"
 #include "scenario/ScenarioLoader.h"
@@ -13,6 +14,7 @@ class DataLoader;
 class DataManager;
 class SocketServer;
 class PlannerLink;
+class SerialPort;
 
 class HeadlessRunner : public QObject
 {
@@ -73,6 +75,9 @@ private:
 
     void applyScenarioTestConfig();
 
+    bool setupSerial();
+    void handleSerialLine(const QByteArray &line);
+
 private:
     QString configPath_;
     QString dataPath_;
@@ -108,6 +113,16 @@ private:
     int maxTestFrames_ = 200;
 
     PlannerLink *plannerLink_ = nullptr;
+
+    SerialPort *serialPort_ = nullptr;
+
+    // 用户请求的目标速度，单位 m/s。
+    double serialTargetSpeedMps_ = 0.0;
+
+    // 最新仿真帧中的实际状态。
+    double latestSpeedMps_ = 0.0;
+    bool latestAeb_ = false;
+    bool haveSerialState_ = false;
 };
 
 #endif

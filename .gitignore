@@ -1,10 +1,12 @@
 # =========================
 # CMake build directories
 # =========================
-build/
-build-*/
-cmake-build-*/
-install/
+/build/
+/build-*/
+/package-rk3568/
+/record/
+/test_result/
+*.log
 
 # =========================
 # CMake generated files
